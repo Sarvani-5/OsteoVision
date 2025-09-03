@@ -1,1 +1,0 @@
-web: gunicorn kneeoa:app --timeout 120 --workers 1 --max-requests 100
