@@ -16,6 +16,8 @@ from tensorflow.keras.applications.inception_resnet_v2 import preprocess_input
 from tensorflow.keras.models import Model
 import json
 
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # Suppress TF logs
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'  # Disable oneDNN optimizations to save memory
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
