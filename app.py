@@ -39,6 +39,11 @@ def load_keras_model():
         # Load the original Inception-ResNet-v2 model
         model = load_model(model_path)
         logger.info("Model loaded successfully!")
+        
+        # Log the expected input shape
+        input_shape = model.input_shape
+        logger.info(f"Model expects input shape: {input_shape}")
+        
         return model
     except Exception as e:
         logger.error(f"Error loading model: {str(e)}")
@@ -96,8 +101,8 @@ class_info = {
     }
 }
 
-# Image preprocessing
-def preprocess_img(img, target_size=(224, 224)):
+# Image preprocessing - FIXED: Changed target_size to (200, 200)
+def preprocess_img(img, target_size=(200, 200)):
     if len(img.shape) == 2:
         img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
     elif img.shape[2] == 1:
@@ -158,13 +163,15 @@ def generate_gradcam(model, img_array, original_img, last_conv_layer_name='conv_
         # Generate Grad-CAM heatmap
         heatmap = make_gradcam_heatmap(img_array, base_model, last_conv_layer_name, predicted_class)
         
-        # Create overlay
-        overlay_img = create_gradcam_overlay(original_img, heatmap)
+        # Create overlay - resize original_img to 200x200 for consistency
+        original_img_resized = cv2.resize(original_img, (200, 200))
+        overlay_img = create_gradcam_overlay(original_img_resized, heatmap)
         
         return overlay_img, predicted_class, preds[0][predicted_class]
     except Exception as e:
         logger.error(f"Grad-CAM error: {str(e)}")
-        return original_img, 0, 0.0
+        # Return resized original image on error
+        return cv2.resize(original_img, (200, 200)), 0, 0.0
 
 # Routes
 @app.route('/')
@@ -210,8 +217,8 @@ def analyze():
         # Make prediction
         start_time = time.time()
         predictions = model.predict(processed_img, verbose=0)
-        pred_class = np.argmax(predictions[0])
-        confidence = predictions[0][pred_class]
+        pred_class = int(np.argmax(predictions[0]))  # Convert to Python int
+        confidence = float(predictions[0][pred_class])  # Convert to Python float
         
         # Generate Grad-CAM
         gradcam_img, gradcam_class, gradcam_confidence = generate_gradcam(

@@ -1,11 +1,13 @@
 services:
   - type: web
-    name: OsteoVision
+    name: osteo-vision
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn --bind 0.0.0.0:$PORT app:app
+    startCommand: gunicorn app:app
     envVars:
       - key: PYTHON_VERSION
-        value: 3.9.16
-      - key: FLASK_ENV
-        value: production
+        value: 3.11.0
+      - key: TF_CPP_MIN_LOG_LEVEL
+        value: 3
+      - key: TF_ENABLE_ONEDNN_OPTS
+        value: 0
